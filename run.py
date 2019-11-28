@@ -59,11 +59,13 @@ class Menu:
         self.print_menu()
 
     def add_solution_attempt(self):
-        #TODO: Need a way to get back to menu in case I didn't mean to add a new solution
-        self.problem.attempts.append(input("\nDetail the latest attempt: "))
-        print(self.problem.attempts)
-        print()
-        self.print_menu()
+        response = input("\nDetail the latest attempt (type :back to return to menu): ")
+        if response == ":back":
+            self.print_menu()
+        else:
+            self.problem.attempts.append(response)
+            print()
+            self.print_menu()
     
     def print_attempts(self):
         if self.problem.attempts:
