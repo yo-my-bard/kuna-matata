@@ -21,33 +21,39 @@ class KunaMatata:
 
     def print_menu(self):
         allowed_options = []
-        print("Select an option:")
+        print("\nSelect an option:")
         for k,v in self.menu_options.items():
             if not self.problem:
                 if k in ['2', '3', '4']:
                     continue
                 allowed_options.append(k)
-                print(k, '\t', v)
+                print(k, v)
             else:
                 if k in ['1']:
                     print(f'Currently working on: {self.problem.prob}')
                     continue
                 allowed_options.append(k)
-                print(k, '\t', v)
+                print(k, v)
         
         self.listen_for_option(allowed_options)
     
     def listen_for_option(self, allowed_options):
-        opt = input("Select an option: ")
+        opt = input("Select an option (one of the numbers above): ")
+        if opt == '4':
+            suboption = input("Name for your output .txt file? (Press Enter for default output.txt. Weird file names will cause an error ¯\_(ツ)_/¯) ")
+            self.handle_option(opt, allowed_options, suboption)
+        elif opt == '5':
+            suboption = input("Path to the .txt file that you are trying to load? ")
+            self.handle_option(opt, allowed_options, suboption)
         self.handle_option(opt, allowed_options)
         return opt
 
-    def handle_option(self, opt, allowed_options):
+    def handle_option(self, opt, allowed_options, suboption=None):
         handle = {'1': lambda: self.create_new_problem(),
                  '2': lambda: self.add_solution_attempt(),
                  '3': lambda: self.print_attempts(),
-                 '4': lambda: self.save_attempts(),
-                 '5': lambda: self.load_attempt(),
+                 '4': lambda: self.save_attempts(fname=suboption),
+                 '5': lambda: self.load_attempt(fname=suboption),
                  '0': sys.exit}
         if opt not in allowed_options:
             print(f"\nSelected option, {opt}, not allowed. Try again.")
@@ -79,7 +85,8 @@ class KunaMatata:
     
     def save_attempts(self, fmt='txt', fname='output'):
         os.makedirs("output", exist_ok=True)
-
+        if not fname.strip():
+            fname='output'
         if self.problem.attempts and fmt=='txt':
             with open(f'./output/{fname}.txt', 'w') as f:
                 f.write(f"Problem statement: {self.problem.prob}\n")
@@ -99,7 +106,6 @@ class KunaMatata:
             with open(fname, 'r') as f:
                 prob_statement = f.readline()
                 prob_statement = prob_statement.split('Problem statement: ')[1].strip()
-                print(prob_statement)
                 self.problem = Problem()
                 self.problem.prob = prob_statement
 
@@ -117,8 +123,6 @@ class KunaMatata:
             print("Try different file name")
             self.print_menu()
     
-
-
 class Problem:
 
     def __init__(self, prob=None, attempts=None):
