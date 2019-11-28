@@ -1,11 +1,13 @@
 import sys
+import os
 
-class Menu:
+class KunaMatata:
     
     def __init__(self):
         self.menu_options = {'1': "Create a new problem",
                         '2': "Add a new solution attempt",
                         '3': "Review all existing attempts",
+                        '4': "Save existing attempts to .txt file",
                         '0': "Exit"}
         self.introduction = "Welcome to Kuna Matata. It's Swahili for 'there are problems'.\
             \nAnd indeed, there are problems that need solving. Use this to track all of the\
@@ -21,7 +23,7 @@ class Menu:
         allowed_options = []
         for k,v in self.menu_options.items():
             if not self.problem:
-                if k in ['2', '3']:
+                if k in ['2', '3', '4']:
                     continue
                 allowed_options.append(k)
                 print(k, '\t', v)
@@ -39,14 +41,11 @@ class Menu:
         self.handle_option(opt, allowed_options)
         return opt
 
-    def reprompt(self):
-        self.print_menu()
-        # self.listen_for_option(allowed_options)
-
     def handle_option(self, opt, allowed_options):
         handle = {'1': lambda: self.create_new_problem(),
                  '2': lambda: self.add_solution_attempt(),
                  '3': lambda: self.print_attempts(),
+                 '4': lambda: self.save_attempts(),
                  '0': sys.exit}
         if opt not in allowed_options:
             print(f"\nSelected option, {opt}, not allowed. Try again.")
@@ -76,6 +75,21 @@ class Menu:
         
         self.print_menu()
     
+    def save_attempts(self, fmt='txt', fname='output'):
+        os.makedirs("output", exist_ok=True)
+
+        if self.problem.attempts and fmt=='txt':
+            with open(f'./output/{fname}.txt', 'w') as f:
+                for n, attempt in enumerate(self.problem.attempts):
+                    f.write(f"Attempt {n+1}:\t")
+                    f.write(attempt)
+                    if n < len(self.problem.attempts) - 1:
+                        f.write('\n')
+                f.close()
+        else:
+            print("No existing attempts to save! Try adding an attempt first.\n")
+            self.print_menu()
+    
 
 
 class Problem:
@@ -89,4 +103,6 @@ class Problem:
         self.prob = input("What's the problem we're solving today? ") 
         print()
 
-m = Menu()
+
+if __name__ == '__main__':
+    KunaMatata()
