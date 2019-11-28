@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 
 class KunaMatata:
     
@@ -8,19 +9,19 @@ class KunaMatata:
                         '2': "Add a new solution attempt",
                         '3': "Review all existing attempts",
                         '4': "Save existing attempts to .txt file",
+                        '5': "Load previous problem and attempts",
                         '0': "Exit"}
-        self.introduction = "Welcome to Kuna Matata. It's Swahili for 'there are problems'.\
-            \nAnd indeed, there are problems that need solving. Use this to track all of the\
-            \nattempts that fail before you find the one that works!\n"
+        self.introduction = "Welcome to Kuna Matata. It's Kiswahili for 'there are problems'.\
+            \nAnd indeed, there are problems and this script is meant to help to track all of the\
+            \nattempted solutions that fail before you find the one that works!\n"
         
         self.problem = None
-        
         print(self.introduction)
         self.print_menu()
 
     def print_menu(self):
-        print("Select an option:")
         allowed_options = []
+        print("Select an option:")
         for k,v in self.menu_options.items():
             if not self.problem:
                 if k in ['2', '3', '4']:
@@ -46,6 +47,7 @@ class KunaMatata:
                  '2': lambda: self.add_solution_attempt(),
                  '3': lambda: self.print_attempts(),
                  '4': lambda: self.save_attempts(),
+                 '5': lambda: self.load_attempt(),
                  '0': sys.exit}
         if opt not in allowed_options:
             print(f"\nSelected option, {opt}, not allowed. Try again.")
@@ -80,23 +82,51 @@ class KunaMatata:
 
         if self.problem.attempts and fmt=='txt':
             with open(f'./output/{fname}.txt', 'w') as f:
+                f.write(f"Problem statement: {self.problem.prob}\n")
                 for n, attempt in enumerate(self.problem.attempts):
                     f.write(f"Attempt {n+1}:\t")
                     f.write(attempt)
                     if n < len(self.problem.attempts) - 1:
                         f.write('\n')
                 f.close()
+            self.print_menu()
         else:
             print("No existing attempts to save! Try adding an attempt first.\n")
+            self.print_menu()
+    
+    def load_attempt(self, fmt='txt', fname='./output/output.txt'):
+        try:
+            with open(fname, 'r') as f:
+                prob_statement = f.readline()
+                prob_statement = prob_statement.split('Problem statement: ')[1].strip()
+                print(prob_statement)
+                self.problem = Problem()
+                self.problem.prob = prob_statement
+
+                while True:
+                    line = f.readline()
+                    if line:
+                        assert 'Attempt' in line, "Unexpected formatting in .txt file"
+                        new_line = re.split('Attempt .+\\t', line)[1].strip()
+                        self.problem.attempts.append(new_line)
+                    else:
+                        break
+            print(f"Successfully loaded file from {fname}.")
+            self.print_menu()
+        except FileNotFoundError:
+            print("Try different file name")
             self.print_menu()
     
 
 
 class Problem:
 
-    def __init__(self, prob=None, attempts=[]):
+    def __init__(self, prob=None, attempts=None):
         self.prob = prob
-        self.attempts = attempts
+        if not attempts:
+            self.attempts = []
+        else:
+            self.attempts = attempts
 
     def get_problem(self, prob=None):
         print()
